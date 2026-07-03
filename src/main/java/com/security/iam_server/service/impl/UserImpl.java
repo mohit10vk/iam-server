@@ -3,6 +3,7 @@ package com.security.iam_server.service.impl;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.security.iam_server.entity.User;
 import com.security.iam_server.repository.UserRepository;
@@ -15,15 +16,21 @@ public class UserImpl implements UserService{
 	
 	@Autowired
 	private UserRepository userRepository;
-
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
   
 	@Override
 	public String saveUser(User user) {
 		if(userRepository.existsFindByEmail(user.getEmail())) {
 			return "Email already exists";
 		}
+		
+		user.setPasswords(passwordEncoder.encode(user.getPasswords()));
+
 			
 		userRepository.save(user);
+		
 		return "SUCCESSFULLY CREATED";
 	}
 
