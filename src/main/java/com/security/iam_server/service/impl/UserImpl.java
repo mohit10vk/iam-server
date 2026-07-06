@@ -26,7 +26,7 @@ public class UserImpl implements UserService{
 			return "Email already exists";
 		}
 		
-		user.setPasswords(passwordEncoder.encode(user.getPasswords()));
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 
 			
 		userRepository.save(user);
@@ -56,7 +56,7 @@ public class UserImpl implements UserService{
 		
 		existingUser.setFirstName(user.getFirstName());
         existingUser.setLastName(user.getLastName());
-        existingUser.setPasswords(user.getPasswords());
+        existingUser.setPassword(user.getPassword());
 
         userRepository.save(existingUser);
 
