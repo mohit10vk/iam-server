@@ -5,6 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 
 import com.security.iam_server.dto.LoginRequest;
+import com.security.iam_server.security.JwtSecurity;
 import com.security.iam_server.service.AuthService;
 
 @Service
@@ -12,9 +13,13 @@ public class AuthServiceImpl implements AuthService {
 	
 	private final AuthenticationManager authenticationManager;
 	
-	public AuthServiceImpl(AuthenticationManager authenticationManager) {
+	private final JwtSecurity jwtSecurity;
+	
+	public AuthServiceImpl(AuthenticationManager authenticationManager,JwtSecurity jwtSecurity) {
 	
 		this.authenticationManager = authenticationManager;
+		this.jwtSecurity = jwtSecurity;
+	
 	}
 
 
@@ -28,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
 			    )
 			);
 
-			return "Login Successful";
+			return jwtSecurity.generateToken(loginRequest.getEmail());
 	}
 
 }
