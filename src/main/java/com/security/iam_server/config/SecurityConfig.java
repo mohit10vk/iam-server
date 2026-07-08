@@ -2,6 +2,7 @@ package com.security.iam_server.config;
 
 
 import com.security.iam_server.controller.UserController;
+import com.security.iam_server.filter.JwtAuthenticationFilter;
 import com.security.iam_server.service.impl.CustomUserDetailsService;
 
 import org.springframework.context.annotation.Bean;
@@ -15,15 +16,20 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
 public class SecurityConfig {
 
-	
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	private final CustomUserDetailsService customUserDetailsService;
 	
-	 public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
+	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+			CustomUserDetailsService customUserDetailsService) {
+		
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 		this.customUserDetailsService = customUserDetailsService;
 	}
 
@@ -35,7 +41,11 @@ public class SecurityConfig {
 	            .authorizeHttpRequests(auth -> auth
 	                .requestMatchers("/user/register","/user/login").permitAll()
 	                .anyRequest().authenticated())
+	            .sessionManagement(session ->
+	                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 	            .authenticationProvider(authenticationProvider())
+	            .addFilterBefore(jwtAuthenticationFilter,
+	                    UsernamePasswordAuthenticationFilter.class)
 	            .httpBasic(Customizer.withDefaults());
 
 	        return http.build();

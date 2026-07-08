@@ -1,7 +1,8 @@
 package com.security.iam_server.security;
 
-import java.security.Key;
+
 import java.util.Date;
+import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ public class JwtSecurity {
 	@Value("${jwt.secret}")
 	private String secretKey;
 	
-	private Key getSignInKey() {
+	private SecretKey getSignInKey() {
 		
 		System.out.println(secretKey);
 		System.out.println(secretKey.length());
@@ -31,4 +32,22 @@ public class JwtSecurity {
 	            .signWith(getSignInKey())
 	            .compact();
 	}
+	
+	public String extractUsername(String token) {
+	    return Jwts.parser()
+	            .verifyWith(getSignInKey())
+	            .build()
+	            .parseSignedClaims(token)
+	            .getPayload()
+	            .getSubject();
+	}
+
+	public boolean isTokenValid(String token, String email) {
+	    return extractUsername(token).equals(email);
+	}
+	
+	
+	
+	
+	
 }
