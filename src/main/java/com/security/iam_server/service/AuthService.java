@@ -1,8 +1,12 @@
 package com.security.iam_server.service;
 
 import com.security.iam_server.dto.LoginRequest;
+import com.security.iam_server.dto.LoginResponse;
+import com.security.iam_server.dto.RefreshTokenRequest;
 
 public interface AuthService {
      
-	String login(LoginRequest loginRequest);
+	LoginResponse login(LoginRequest loginRequest);
+	
+	LoginResponse refreshToken(RefreshTokenRequest request);
 }

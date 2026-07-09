@@ -5,8 +5,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Service;
 
 import com.security.iam_server.dto.LoginRequest;
+import com.security.iam_server.dto.LoginResponse;
+import com.security.iam_server.dto.RefreshTokenRequest;
+import com.security.iam_server.entity.RefreshToken;
+import com.security.iam_server.entity.User;
+import com.security.iam_server.repository.UserRepository;
 import com.security.iam_server.security.JwtSecurity;
 import com.security.iam_server.service.AuthService;
+import com.security.iam_server.service.RefreshTokenService;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -15,25 +21,71 @@ public class AuthServiceImpl implements AuthService {
 	
 	private final JwtSecurity jwtSecurity;
 	
-	public AuthServiceImpl(AuthenticationManager authenticationManager,JwtSecurity jwtSecurity) {
+	private final UserRepository userRepository;
 	
+	private final RefreshTokenService refreshTokenService;
+	
+
+	public AuthServiceImpl(AuthenticationManager authenticationManager, JwtSecurity jwtSecurity,
+			UserRepository userRepository, RefreshTokenService refreshTokenService) {
+
 		this.authenticationManager = authenticationManager;
 		this.jwtSecurity = jwtSecurity;
-	
+		this.userRepository = userRepository;
+		this.refreshTokenService = refreshTokenService;
 	}
-
 
 
 	@Override
-	public String login(LoginRequest loginRequest) {
+	public LoginResponse login(LoginRequest loginRequest) {
+		
 		authenticationManager.authenticate(
 			    new UsernamePasswordAuthenticationToken(
 			        loginRequest.getEmail(),
-			        loginRequest.getPassword()
-			    )
-			);
+			        loginRequest.getPassword()));
+		
+		 User user = userRepository.findByEmail(loginRequest.getEmail())
+	                .orElseThrow(() -> new RuntimeException("User not found"));
+		 
+		 String accessToken = jwtSecurity.generateToken(user.getEmail());
+		 
+		 RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-			return jwtSecurity.generateToken(loginRequest.getEmail());
+
+			return new LoginResponse(
+	                accessToken,
+	                refreshToken.getToken(),
+	                "Bearer",
+	                3600);
 	}
+
+
+	@Override
+	public LoginResponse refreshToken(RefreshTokenRequest request) {
+		
+		RefreshToken refreshToken = refreshTokenService
+	            .findByToken(request.getRefreshToken())
+	            .orElseThrow(() ->
+	                    new RuntimeException("Refresh Token Not Found"));
+
+	    if (!refreshTokenService.verfiyExpiration(refreshToken)) {
+	        throw new RuntimeException("Refresh Token Expired");
+	    }
+
+	    User user = refreshToken.getUser();
+
+	    String accessToken = jwtSecurity.generateToken(user.getEmail());
+
+	    return new LoginResponse(
+	            accessToken,
+	            refreshToken.getToken(),
+	            "Bearer",
+	            3600);
+	}
+	
+	
+	
+	
+	
 
 }
