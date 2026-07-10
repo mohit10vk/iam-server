@@ -3,6 +3,7 @@ package com.security.iam_server.controller;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,6 +47,12 @@ public class UserController {
      @DeleteMapping("/delete/{id}")
      String deleteUser(@PathVariable Long id){
     	 return userService.deleteUser(id);
+     }
+     
+     @GetMapping("/profile")
+     @PreAuthorize("hasRole('USER')")
+     public String profile() {
+         return "Welcome User";
      }
      
 }

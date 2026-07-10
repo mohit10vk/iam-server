@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
 		 User user = userRepository.findByEmail(loginRequest.getEmail())
 	                .orElseThrow(() -> new RuntimeException("User not found"));
 		 
-		 String accessToken = jwtSecurity.generateToken(user.getEmail());
+		 String accessToken = jwtSecurity.generateToken(user);
 		 
 		 RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
@@ -74,7 +74,7 @@ public class AuthServiceImpl implements AuthService {
 
 	    User user = refreshToken.getUser();
 
-	    String accessToken = jwtSecurity.generateToken(user.getEmail());
+	    String accessToken = jwtSecurity.generateToken(user);
 
 	    return new LoginResponse(
 	            accessToken,

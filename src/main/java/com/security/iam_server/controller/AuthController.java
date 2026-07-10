@@ -31,11 +31,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 	
-	@GetMapping("/profile")
-	public String profile() {
-	    return "Welcome Mohit";
-	}
-	
 	@PostMapping("/refresh-token")
 	public ResponseEntity<LoginResponse> refreshToken(
 	        @RequestBody RefreshTokenRequest request) {

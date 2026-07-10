@@ -7,6 +7,8 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.security.iam_server.entity.User;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -23,10 +25,10 @@ public class JwtSecurity {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 	
-	public String generateToken(String email) {
+	public String generateToken(User user) {
 
 	    return Jwts.builder()
-	            .subject(email)
+	            .subject(user.getEmail()).claim("role", user.getRole().name())
 	            .issuedAt(new Date())
 	            .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
 	            .signWith(getSignInKey())
@@ -40,6 +42,16 @@ public class JwtSecurity {
 	            .parseSignedClaims(token)
 	            .getPayload()
 	            .getSubject();
+	}
+	
+	public String extractRole(String token) {
+
+	    return Jwts.parser()
+	            .verifyWith(getSignInKey())
+	            .build()
+	            .parseSignedClaims(token)
+	            .getPayload()
+	            .get("role", String.class);
 	}
 
 	public boolean isTokenValid(String token, String email) {
