@@ -15,4 +15,6 @@ public interface UserService {
 	String updateUser(Long id, User user);
 	
 	String deleteUser(Long id);
+	
+	void logout(String email);
 }

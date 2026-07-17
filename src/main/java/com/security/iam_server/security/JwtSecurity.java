@@ -20,8 +20,7 @@ public class JwtSecurity {
 	
 	private SecretKey getSignInKey() {
 		
-		System.out.println(secretKey);
-		System.out.println(secretKey.length());
+		
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 	

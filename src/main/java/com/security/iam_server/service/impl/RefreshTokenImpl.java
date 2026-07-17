@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.security.iam_server.entity.RefreshToken;
 import com.security.iam_server.entity.User;
@@ -49,9 +50,17 @@ public class RefreshTokenImpl implements RefreshTokenService{
 	public void deleteByUser(User user) {
 		refreshTokenRepository.deleteByUser(user);
 	}
+
+	@Transactional
+	@Override
+	public void logout(User user) {
+
+		refreshTokenRepository.deleteByUser(user);
+	}
 	
 	
 	
+
 	
 
 }

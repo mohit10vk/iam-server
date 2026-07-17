@@ -2,12 +2,13 @@ package com.security.iam_server.service.impl;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.security.iam_server.entity.User;
 import com.security.iam_server.enums.Role;
 import com.security.iam_server.repository.UserRepository;
+import com.security.iam_server.service.RefreshTokenService;
 import com.security.iam_server.service.UserService;
 
 @Service
@@ -15,12 +16,24 @@ public class UserImpl implements UserService{
 
    
 	
-	@Autowired
+	
 	private UserRepository userRepository;
 	
-	@Autowired
+	
 	private PasswordEncoder passwordEncoder;
-  
+	
+	private final RefreshTokenService refreshTokenService;
+	
+	
+
+	public UserImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+			RefreshTokenService refreshTokenService) {
+		
+		this.userRepository = userRepository;
+		this.passwordEncoder = passwordEncoder;
+		this.refreshTokenService = refreshTokenService;
+	}
+
 	@Override
 	public String saveUser(User user) {
 		if(userRepository.existsFindByEmail(user.getEmail())) {
@@ -76,8 +89,16 @@ public class UserImpl implements UserService{
 		return "User Deleted Successfully";
 	}
 
-	
-	
+	@Override
+	public void logout(String email) {
+		
+		User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+	    refreshTokenService.logout(user);
+	}
+
+
 	
 
 }

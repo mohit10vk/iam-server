@@ -7,6 +7,8 @@ import com.security.iam_server.entity.User;
 
 public interface RefreshTokenService {
 	
+	
+	
 	RefreshToken createRefreshToken(User user);
 	
 	Optional<RefreshToken> findByToken(String token);
@@ -14,5 +16,8 @@ public interface RefreshTokenService {
 	boolean verfiyExpiration(RefreshToken token);
 	
 	void deleteByUser(User user);
+	
+	void logout(User user);
 
+	
 }

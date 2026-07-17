@@ -4,6 +4,8 @@ package com.security.iam_server.config;
 import com.security.iam_server.filter.JwtAuthenticationFilter;
 import com.security.iam_server.service.impl.CustomUserDetailsService;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,10 +46,24 @@ public class SecurityConfig {
 	                .anyRequest().authenticated())
 	            .sessionManagement(session ->
 	                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+	            
+	            .exceptionHandling(exception -> exception
+	            	    .authenticationEntryPoint((request, response, authException) -> {
+	            	        System.out.println("=== AUTHENTICATION ENTRY POINT ===");
+	            	        authException.printStackTrace();
+	            	        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+	            	    })
+	            	    .accessDeniedHandler((request, response, accessDeniedException) -> {
+	            	        System.out.println("=== ACCESS DENIED HANDLER ===");
+	            	        accessDeniedException.printStackTrace();
+	            	        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+	            	    })
+	            	)
+	            
 	            .authenticationProvider(authenticationProvider())
 	            .addFilterBefore(jwtAuthenticationFilter,
 	                    UsernamePasswordAuthenticationFilter.class)
-	            .httpBasic(Customizer.withDefaults());
+			/* .httpBasic(Customizer.withDefaults()) */;
 
 	        return http.build();
 	    }
