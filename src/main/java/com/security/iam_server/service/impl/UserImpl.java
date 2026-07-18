@@ -5,8 +5,12 @@ import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException.BadRequest;
+
+import com.security.iam_server.dto.ChangePasswordRequest;
 import com.security.iam_server.entity.User;
 import com.security.iam_server.enums.Role;
+import com.security.iam_server.exception.BadRequestException;
 import com.security.iam_server.repository.UserRepository;
 import com.security.iam_server.service.RefreshTokenService;
 import com.security.iam_server.service.UserService;
@@ -14,18 +18,12 @@ import com.security.iam_server.service.UserService;
 @Service
 public class UserImpl implements UserService{
 
-   
+	private final UserRepository userRepository;
 	
-	
-	private UserRepository userRepository;
-	
-	
-	private PasswordEncoder passwordEncoder;
+	private final PasswordEncoder passwordEncoder;
 	
 	private final RefreshTokenService refreshTokenService;
 	
-	
-
 	public UserImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
 			RefreshTokenService refreshTokenService) {
 		
@@ -98,7 +96,47 @@ public class UserImpl implements UserService{
 	    refreshTokenService.logout(user);
 	}
 
+	@Override
+	public String changePassword(String email, ChangePasswordRequest request) {
+
+	    User user = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new BadRequestException("User not found"));
+
+	    if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+	        throw new BadRequestException("Old Password is incorrect");
+	    }
+
+	    if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+	        throw new BadRequestException("New password must be different from old password");
+	    }
+
+	    if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+	        throw new BadRequestException("New Password and Confirm Password do not match");
+	    }
+
+	    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+	    userRepository.save(user);
+
+	    return "Password Changed Successfully";
+	}
 
 	
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

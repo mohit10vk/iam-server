@@ -2,6 +2,7 @@ package com.security.iam_server.service;
 
 import java.util.Optional;
 
+import com.security.iam_server.dto.ChangePasswordRequest;
 import com.security.iam_server.entity.User;
 
 public interface UserService {
@@ -17,4 +18,6 @@ public interface UserService {
 	String deleteUser(Long id);
 	
 	void logout(String email);
+	
+	String changePassword(String email, ChangePasswordRequest request);
 }

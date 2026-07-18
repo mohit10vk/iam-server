@@ -3,6 +3,8 @@ package com.security.iam_server.controller;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.security.iam_server.dto.ChangePasswordRequest;
 import com.security.iam_server.entity.User;
 import com.security.iam_server.service.UserService;
 
@@ -48,7 +51,17 @@ public class UserController {
     	 return userService.deleteUser(id);
      }
      
-     
+     @PutMapping("/change-password")
+     public ResponseEntity<String> changePassword(
+             Authentication authentication,
+             @RequestBody ChangePasswordRequest request) {
+
+         String email = authentication.getName();
+
+         String response = userService.changePassword(email, request);
+
+         return ResponseEntity.ok(response);
+     }
      
 }
 
