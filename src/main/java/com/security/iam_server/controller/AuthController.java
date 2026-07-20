@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.security.iam_server.dto.ForgotPasswordRequest;
 import com.security.iam_server.dto.LoginRequest;
 import com.security.iam_server.dto.LoginResponse;
 import com.security.iam_server.dto.RefreshTokenRequest;
@@ -63,5 +64,12 @@ public class AuthController {
 
         return ResponseEntity.ok("Logout Successfully");
     }
+	
+	@PostMapping("/forgot-password")
+	public ResponseEntity<String> forgotPassword(
+	        @RequestBody ForgotPasswordRequest request) {
+
+	    return ResponseEntity.ok(authService.forgotPassword(request));
+	}
 	
 }
