@@ -6,7 +6,9 @@ import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.security.iam_server.dto.ForgotPasswordRequest;
 import com.security.iam_server.dto.LoginRequest;
@@ -27,6 +29,7 @@ import com.security.iam_server.service.RefreshTokenService;
 
 @Service
 public class AuthServiceImpl implements AuthService {
+    private final PasswordEncoder passwordEncoder;
 
     private final MailService mailService;
 
@@ -40,16 +43,19 @@ public class AuthServiceImpl implements AuthService {
 	
 	private final RefreshTokenService refreshTokenService;
 	
+	
 
-	public AuthServiceImpl(AuthenticationManager authenticationManager, JwtSecurity jwtSecurity,
-			UserRepository userRepository, RefreshTokenService refreshTokenService, PasswordResetTokenRepository passwordResetTokenRepository, MailService mailService) {
-
+	public AuthServiceImpl(PasswordEncoder passwordEncoder, MailService mailService,
+			PasswordResetTokenRepository passwordResetTokenRepository, AuthenticationManager authenticationManager,
+			JwtSecurity jwtSecurity, UserRepository userRepository, RefreshTokenService refreshTokenService) {
+		
+		this.passwordEncoder = passwordEncoder;
+		this.mailService = mailService;
+		this.passwordResetTokenRepository = passwordResetTokenRepository;
 		this.authenticationManager = authenticationManager;
 		this.jwtSecurity = jwtSecurity;
 		this.userRepository = userRepository;
 		this.refreshTokenService = refreshTokenService;
-		this.passwordResetTokenRepository = passwordResetTokenRepository;
-		this.mailService = mailService;
 	}
 
 
@@ -102,6 +108,7 @@ public class AuthServiceImpl implements AuthService {
 
 
 	@Override
+	@Transactional
 	public String forgotPassword(ForgotPasswordRequest request) {
 		User user = userRepository.findByEmail(request.getEmail())
 		        .orElseThrow(() -> new BadRequestException("User not found"));
@@ -125,9 +132,33 @@ public class AuthServiceImpl implements AuthService {
 
 
 	@Override
+	@Transactional
 	public String resetPassword(ResetPasswordRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+		PasswordResetToken resetToken = passwordResetTokenRepository
+	            .findByToken(request.getToken())
+	            .orElseThrow(() -> new BadRequestException("Invalid token"));
+
+	    if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+	        throw new BadRequestException("Token has expired");
+	    }
+
+	    if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+	        throw new BadRequestException("New Password and Confirm Password do not match");
+	    }
+
+	    User user = resetToken.getUser();
+
+	    if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+	        throw new BadRequestException("New password must be different from old password");
+	    }
+
+	    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+	    userRepository.save(user);
+
+	    passwordResetTokenRepository.delete(resetToken);
+
+	    return "Password reset successfully";
 	}
 
 

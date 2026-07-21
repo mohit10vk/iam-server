@@ -14,6 +14,7 @@ import com.security.iam_server.dto.ForgotPasswordRequest;
 import com.security.iam_server.dto.LoginRequest;
 import com.security.iam_server.dto.LoginResponse;
 import com.security.iam_server.dto.RefreshTokenRequest;
+import com.security.iam_server.dto.ResetPasswordRequest;
 import com.security.iam_server.service.AuthService;
 import com.security.iam_server.service.UserService;
 
@@ -70,6 +71,13 @@ public class AuthController {
 	        @RequestBody ForgotPasswordRequest request) {
 
 	    return ResponseEntity.ok(authService.forgotPassword(request));
+	}
+	
+	@PostMapping("/reset-password")
+	public ResponseEntity<String> resetPassword(
+	        @RequestBody ResetPasswordRequest request) {
+
+	    return ResponseEntity.ok(authService.resetPassword(request));
 	}
 	
 }
